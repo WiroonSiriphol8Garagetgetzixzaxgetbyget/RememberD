@@ -259,8 +259,6 @@ public class AddFragment extends Fragment {
         noteRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-
-
             }
         });//delete
 
