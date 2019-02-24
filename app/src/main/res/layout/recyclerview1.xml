@@ -24,7 +24,7 @@
             android:src="@drawable/ic_one" />
 
         <TextView
-            android:id="@+id/head"
+            android:id="@+id/txt_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
@@ -40,15 +40,15 @@
             android:background="@color/lightgray" />
 
         <TextView
-            android:id="@+id/body"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/txt_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:padding="5dp"
             android:textAlignment="center"
             android:ems="6"
-            android:text="มีการนัดหมาย 31 วัน"
-            android:textSize="13sp"
+            android:text="30 appointment"
+            android:textSize="14sp"
             android:textColor="@android:color/holo_red_dark" />
 
     </LinearLayout>

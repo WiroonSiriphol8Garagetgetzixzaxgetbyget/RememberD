@@ -1,7 +1,10 @@
 <resources>
+    <!--http://10.70.20.112-->
+    <string name="config_IP">http://10.70.20.112</string>
     <string name="app_name">RememberD</string>
-    <string name="str_date">วัน/เดือน/ปี</string>
-    <string name="str_time">เวลา</string>
-    <string name="str_place">สถานที่</string>
-    <string name="str_act">รายละเอียด</string>
+    <string name="str_date">day/month/year</string>
+    <string name="str_time">time</string>
+    <string name="str_place">place</string>
+    <string name="str_act">activity</string>
+    <string name="str_year">year</string>
 </resources>

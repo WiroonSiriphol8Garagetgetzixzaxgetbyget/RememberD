@@ -7,6 +7,9 @@ import com.google.firebase.iid.InstanceIdResult;
 
 public class Common {
 
+    public static String year = "";
+    public static boolean flag_year = false;
+
     public static String currentToken = "";
 
     private static String baseUrl = "https://fcm.googleapis.com/";

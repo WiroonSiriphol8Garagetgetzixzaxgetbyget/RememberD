@@ -1,14 +1,11 @@
 package com.example.simple.myrememberdfirebase;
 
-
-import android.annotation.SuppressLint;
-import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +18,12 @@ import android.widget.Button;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.simple.myrememberdfirebase.Model.MyResponse;
 import com.example.simple.myrememberdfirebase.Model.SetNotification;
 import com.example.simple.myrememberdfirebase.Model.Sender;
@@ -31,18 +34,21 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.iid.FirebaseInstanceId;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import maes.tech.intentanim.CustomIntent;
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 
 
 /**
@@ -54,25 +60,27 @@ public class AddFragment extends Fragment {
     private EditText data_place;
     private EditText data_activity;
 
-    private TextInputLayout date;
-
     FirebaseFirestore db;
     Map<String, Object> user;
     TimePickerDialog timePickerDialog;
     Calendar calendar = Calendar.getInstance();
-    String name_db = "db_remmemberD";
     APIService mService;
 
-    private static final String TAG = "MainTest";
+    String id_rmmb;
+    boolean action;
+    String[] sdate;
+    public String month,NoMonth,y;
+
 
     public AddFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        final String connstr_query_update = getResources().getString(R.string.config_IP) + "/Android_Query/query_update.php";
+
         Common.currentToken = FirebaseInstanceId.getInstance().getToken();
         mService = Common.getFCMClient();
 
@@ -87,12 +95,29 @@ public class AddFragment extends Fragment {
         data_time = view.findViewById(R.id.data_time);
         data_place = view.findViewById(R.id.data_place);
         data_activity = view.findViewById(R.id.data_activity);
-
-        date = view.findViewById(R.id.date);
-
         Button btn_submit = view.findViewById(R.id.btn_submit);
 
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            action = bundle.getBoolean("action");
+            if (action) {
+                id_rmmb = bundle.getString("id_rmmb");
+                String date = bundle.getString("dmy");
+                String time = bundle.getString("data_time");
+                String place = bundle.getString("data_place");
+                String detail = bundle.getString("detail");
+                month = bundle.getString("Month");
+                NoMonth = bundle.getString("NoMonth");
+                y = bundle.getString("Year");
 
+                data_date.setText(date);
+                data_time.setText(time);
+                data_place.setText(place);
+                data_activity.setText(detail);
+                btn_submit.setText("edit");
+                btn_submit.setBackground(getResources().getDrawable(R.drawable.roundedbutton_edit));
+            }
+        }//edit
 
         data_date.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,34 +136,91 @@ public class AddFragment extends Fragment {
             }
         });
 
+
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ValidateDate() && ValidateTime() && ValidatePlace() && ValidateActivity()) {
-                    String cdate = data_date.getText().toString();
-                    String ctime = data_time.getText().toString();
-                    String cplace = data_place.getText().toString();
-                    String cactivity = data_activity.getText().toString();
+                    if (!action) {
+                        String cdate = data_date.getText().toString();
+                        String ctime = data_time.getText().toString();
+                        String cplace = data_place.getText().toString();
+                        String cactivity = data_activity.getText().toString();
 
-                    String setTitle = " กิจกรรมของคุณ : วันที่ " + cdate + " เวลา " + ctime;
+                        String[] data_cdate = cdate.split("/");
+                        String[] data_ctime = ctime.split(":");
+                        String set_month = "";
+                        String time_hr = "";
+                        String time_minu = "";
 
-                    send_data_to_firebase(cdate, ctime, cactivity, cplace);
+                        String day = data_cdate[0];
+                        int month = Integer.parseInt(data_cdate[1]);
+                        if (month <= 9) {
+                            set_month = "0" + month;
+                        } else {
+                            set_month += month;
+                        }
+                        String year = data_cdate[2];
 
-                    SetNotification notification = new SetNotification(cactivity, setTitle);
+                        int hr_time = Integer.parseInt(data_ctime[0]);
+                        int minu_time = Integer.parseInt(data_ctime[1]);
 
-                    final Sender sender = new Sender(notification, Common.currentToken);
-                    mService.sendNotification(sender)
-                            .enqueue(new Callback<MyResponse>() {
-                                @Override
-                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                        if (hr_time <= 9) {
+                            time_hr = "0" + hr_time;
+                        } else {
+                            time_hr += hr_time;
+                        }
 
-                                }
+                        if (minu_time <= 9) {
+                            time_minu = "0" + minu_time;
+                        } else {
+                            time_minu += minu_time;
+                        }
 
-                                @Override
-                                public void onFailure(Call<MyResponse> call, Throwable t) {
+                        String set_time = time_hr + ":" + time_minu;
 
-                                }
-                            });
+                        MySQLConnect bg = new MySQLConnect(getActivity());
+                        bg.execute(cactivity, cplace, Common.currentToken, year, set_month, day, set_time,"add");
+                    } else {
+                        StringRequest stringRequestUpdate = new StringRequest(Request.Method.POST, connstr_query_update, new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Toast.makeText(getContext(), "Edit data successfully :)", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getContext(), MonthActivity.class);
+                                intent.putExtra("Month",month);
+                                intent.putExtra("NoMonth",NoMonth);
+                                intent.putExtra("Year",y);
+                                startActivity(intent);
+                                CustomIntent.customType(getContext(), "left-to-right");
+                                getActivity().finish();
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        }) {
+                            @Override
+                            protected Map<String, String> getParams() {
+                                String date = data_date.getText().toString().trim();
+                                sdate = date.split("/");
+
+                                Map<String, String> postMap = new HashMap<>();
+                                postMap.put("id_rmmb", id_rmmb);
+                                postMap.put("activity", data_activity.getText().toString().trim());
+                                postMap.put("place", data_place.getText().toString().trim());
+                                postMap.put("token", Common.currentToken);
+                                postMap.put("year", sdate[2]);
+                                postMap.put("month", sdate[1]);
+                                postMap.put("day", sdate[0]);
+                                postMap.put("time", data_time.getText().toString().trim());
+
+                                return postMap;
+                            }
+                        };
+
+                        Volley.newRequestQueue(Objects.requireNonNull(getActivity()).getApplicationContext()).add(stringRequestUpdate);
+                    }
                 }
             }
         });
@@ -187,7 +269,7 @@ public class AddFragment extends Fragment {
         String place = data_place.getText().toString().trim();
         if (place.isEmpty()) {
             data_place.requestFocus();
-            data_place.setError("กรุณากรอกสถานที่");
+            data_place.setError("");
             return false;
         } else {
             data_place.setError(null);
@@ -199,69 +281,11 @@ public class AddFragment extends Fragment {
         String act = data_activity.getText().toString().trim();
         if (act.isEmpty()) {
             data_activity.requestFocus();
-            data_activity.setError("กรุณากรอกรายละเอียด");
+            data_activity.setError("");
             return false;
         } else {
             data_activity.setError(null);
             return true;
         }
     }//ValidatePlace
-
-
-
-    private void send_data_to_firebase(String cdate, String ctime, String cactivity, String cplace) {
-
-        String strDate = (String) DateFormat.format("yyyy-MM-dd hh:mm", new Date());
-
-        user.put("rmmb_date", cdate);
-        user.put("rmmb_time", ctime);
-        user.put("rmmb_place", cplace);
-        user.put("rmmb_activity", cactivity);
-        user.put("rmmb_create_time", strDate);
-
-        db.collection(name_db)
-                .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Toast.makeText(getContext(), "บันทึกสำเร็จ :)", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        startActivity(intent);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d("MYTest", "Error adding document", e);
-                    }
-                });
-
-    }//send_data_to_firebase -> insert_data
-
-    private void update_to_firebase(String rmmb_id, String cdate, String ctime, String cactivity, String cplace, Integer csettime) {
-        String strDate = (String) DateFormat.format("yyyy-MM-dd hh:mm", new Date());
-
-        DocumentReference noteRef2 = db.collection(name_db).document(rmmb_id);
-        noteRef2.update("rmmb_date", cdate, "rmmb_time", ctime,
-                "rmmb_place", cplace, "rmmb_activity", cactivity,
-                "rmmb_settime", csettime, "rmmb_create_time", strDate).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
-            }
-        });
-
-    }//update_to_firebase -> update_data
-
-    private void delete_id_firebase(String rmmb_id) {
-
-        DocumentReference noteRef = db.collection(name_db).document(rmmb_id);
-        noteRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-            }
-        });//delete
-
-    }//delete_id_firebase -> delete_data
-
 }

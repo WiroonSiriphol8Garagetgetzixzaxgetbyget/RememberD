@@ -1,5 +1,6 @@
 package com.example.simple.myrememberdfirebase;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
@@ -12,15 +13,19 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class Adapter1 extends RecyclerView.Adapter<Adapter1.ViewHolder> {
     private int lastPosition = -1;
-    private ArrayList<String> data;
+    private JSONArray data;
     private final OnItemClickListener listener;
     private Context context;
+    private String NoMonth;
 
-    Adapter1(Context context, ArrayList<String> data, OnItemClickListener listener) {
+     Adapter1(Context context, JSONArray data, OnItemClickListener listener) {
         this.context = context;
         this.data = data;
         this.listener = listener;
@@ -28,69 +33,98 @@ public class Adapter1 extends RecyclerView.Adapter<Adapter1.ViewHolder> {
 
 
     public interface OnItemClickListener {
-        void onItemClick(String data, int position);
+        void onItemClick(Context context, String NoMonth, String month, int position);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textView;
+        TextView txt_header, txt_count;
         CardView cardView;
         ImageView img;
 
         ViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.head);
+            txt_header = itemView.findViewById(R.id.txt_header);
+            txt_count = itemView.findViewById(R.id.txt_count);
             cardView = itemView.findViewById(R.id.card);
             img = itemView.findViewById(R.id.img);
         }
 
-        void bind(final String data, final OnItemClickListener listener, int position) {
-            textView.setText(data);
+        @SuppressLint("SetTextI18n")
+        void bind(final JSONObject data, final OnItemClickListener listener, int position) {
+            try {
+                NoMonth = data.getString("month");
+                switch (NoMonth) {
+                    case "01":
+                        txt_header.setText("January");
+                        img.setImageResource(R.drawable.ic_one);
+                        break;
+                    case "02":
+                        txt_header.setText("February");
+                        img.setImageResource(R.drawable.ic_two);
+                        break;
+                    case "03":
+                        txt_header.setText("March");
+                        img.setImageResource(R.drawable.ic_three);
+                        break;
+                    case "04":
+                        txt_header.setText("April");
+                        img.setImageResource(R.drawable.ic_four);
+                        break;
+                    case "05":
+                        txt_header.setText("May");
+                        img.setImageResource(R.drawable.ic_five);
+                        break;
+                    case "06":
+                        txt_header.setText("June");
+                        img.setImageResource(R.drawable.ic_six);
+                        break;
+                    case "07":
+                        txt_header.setText("July");
+                        img.setImageResource(R.drawable.ic_seven);
+                        break;
+                    case "08":
+                        txt_header.setText("August");
+                        img.setImageResource(R.drawable.ic_eight);
+                        break;
+                    case "09":
+                        txt_header.setText("September");
+                        img.setImageResource(R.drawable.ic_nine);
+                        break;
+                    case "10":
+                        txt_header.setText("October");
+                        img.setImageResource(R.drawable.ic_ten);
+                        break;
+                    case "11":
+                        txt_header.setText("November");
+                        img.setImageResource(R.drawable.ic_eleven);
+                        break;
+                    case "12":
+                        txt_header.setText("December");
+                        img.setImageResource(R.drawable.ic_twelve);
+                        break;
+                }
+                    int count = data.getInt("count_notification");
+                txt_count.setText(count + " appointment");
 
-            switch (position) {
-                case 0:
-                    img.setImageResource(R.drawable.ic_one);
-                    break;
-                case 1:
-                    img.setImageResource(R.drawable.ic_two);
-                    break;
-                case 2:
-                    img.setImageResource(R.drawable.ic_three);
-                    break;
-                case 3:
-                    img.setImageResource(R.drawable.ic_four);
-                    break;
-                case 4:
-                    img.setImageResource(R.drawable.ic_five);
-                    break;
-                case 5:
-                    img.setImageResource(R.drawable.ic_six);
-                    break;
-                case 6:
-                    img.setImageResource(R.drawable.ic_seven);
-                    break;
-                case 7:
-                    img.setImageResource(R.drawable.ic_eight);
-                    break;
-                case 8:
-                    img.setImageResource(R.drawable.ic_nine);
-                    break;
-                case 9:
-                    img.setImageResource(R.drawable.ic_ten);
-                    break;
-                case 10:
-                    img.setImageResource(R.drawable.ic_eleven);
-                    break;
-                case 11:
-                    img.setImageResource(R.drawable.ic_twelve);
-                    break;
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
 
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onItemClick(data, getAdapterPosition());
+                    try {
+                        String month = txt_header.getText().toString().trim();
+                        String NoMonth = data.getString("month");
+                        listener.onItemClick(context, NoMonth, month, getAdapterPosition());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             });
+
         }
 
 
@@ -112,12 +146,16 @@ public class Adapter1 extends RecyclerView.Adapter<Adapter1.ViewHolder> {
             lastPosition = position;
         }
 
-        holder.bind((data.get(position)), listener, position);
+        try {
+            holder.bind(((JSONObject) data.get(position)), listener, position);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public int getItemCount() {
-        return data.size();
+        return data.length();
     }
 
 

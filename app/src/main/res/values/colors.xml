@@ -6,4 +6,18 @@
     <color name="lightgray">#ededed</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorMonth01">#F4C124</color>
+    <color name="colorMonth02">#F8ACAB</color>
+    <color name="colorMonth03">#36B9D0</color>
+    <color name="colorMonth04">#D2E56E</color>
+    <color name="colorMonth05">#56BFB9</color>
+    <color name="colorMonth06">#EE578C</color>
+    <color name="colorMonth07">#A1B3BB</color>
+    <color name="colorMonth08">#36ABB3</color>
+    <color name="colorMonth09">#FB835D</color>
+    <color name="colorMonth10">#F6B83B</color>
+    <color name="colorMonth11">#AF9AC8</color>
+    <color name="colorMonth12">#A9CD95</color>
+    <color name="colorEdit">#00bce4</color>
+    <color name="colorAdd">#7ac143</color>
 </resources>
